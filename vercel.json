@@ -1,13 +1,9 @@
 {
-  "functions": {
-    "api.py": {
-      "runtime": "python3.11"
-    }
-  },
+  "version": 2,
+  "builds": [
+    { "src": "api/melhorar.py", "use": "@vercel/python" }
+  ],
   "routes": [
-    {
-      "src": "/responder",
-      "dest": "api.py"
-    }
+    { "src": "/melhorar-documento", "methods": ["POST"], "dest": "api/melhorar.py" }
   ]
 }

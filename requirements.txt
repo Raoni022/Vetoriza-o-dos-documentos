@@ -1,8 +1,4 @@
 fastapi
 uvicorn
+python-docx
 openai
-supabase
-langchain
-langchain-community
-langchain-openai
-python-dotenv
