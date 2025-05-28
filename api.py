@@ -1,37 +1,37 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, UploadFile, File, Form
 from pydantic import BaseModel
+from fastapi.middleware.cors import CORSMiddleware
 from langchain.chains import RetrievalQA
 from langchain_community.vectorstores import SupabaseVectorStore
 from langchain_community.embeddings import OpenAIEmbeddings
 from langchain_openai import ChatOpenAI
 from supabase import create_client
 import os
-from fastapi.middleware.cors import CORSMiddleware
+import docx
+from io import BytesIO
 
 app = FastAPI()
 
+# CORS para funcionar com front-end como V0.dev
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Em produção, troque "*" pelo domínio do seu frontend
-    allow_credentials=True,
+    allow_origins=["*"],
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-
-SUPABASE_URL = "https://kjwdegxainpuekfwajre.supabase.co"
-SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtqd2RlZ3hhaW5wdWVrZndhanJlIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc0NjYxOTY0MSwiZXhwIjoyMDYyMTk1NjQxfQ.8tOq83Bp68oSXslYWtrnYrLAJjTZZ0esH2A5uioDqOk"
-OPENAI_API_KEY = "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"
-
+# Variáveis de ambiente
+SUPABASE_URL = os.environ.get("SUPABASE_URL")
+SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
+OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
 os.environ["OPENAI_API_KEY"] = OPENAI_API_KEY
 
-# 🔗 Conectar com Supabase
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 vector_store = SupabaseVectorStore(
     client=supabase,
     embedding=OpenAIEmbeddings(model="text-embedding-3-small"),
-    table_name="documentos_embeddings",
+    table_name="documents_embeddings",
     query_name="match_documents_embeddings"
 )
 
@@ -48,5 +48,49 @@ class Pergunta(BaseModel):
 
 @app.post("/responder")
 async def responder(p: Pergunta):
-    resultado = qa_chain.invoke({"query": p.pergunta})
-    return {"resposta": resultado}
+    try:
+        resultado = qa_chain.invoke({"query": p.pergunta})
+        return {
+            "resposta": resultado["result"],
+            "fontes": [doc.metadata for doc in resultado["source_documents"]]
+        }
+    except Exception as e:
+        return {"erro": str(e)}
+
+@app.post("/melhorar_documento")
+async def melhorar_documento(file: UploadFile = File(...)):
+    try:
+        doc_bytes = await file.read()
+        doc = docx.Document(BytesIO(doc_bytes))
+        texto_original = "\n".join([p.text for p in doc.paragraphs])
+
+        prompt = f"Melhore o texto a seguir mantendo estilo e estrutura: \n\n{texto_original}"
+        resposta = ChatOpenAI(model="gpt-4", temperature=0).invoke(prompt)
+
+        for i, p in enumerate(doc.paragraphs):
+            if i < len(resposta.content.split("\n")):
+                p.text = resposta.content.split("\n")[i]
+
+        output_stream = BytesIO()
+        doc.save(output_stream)
+        output_stream.seek(0)
+        return {
+            "mensagem": "Documento melhorado com sucesso.",
+            "arquivo_base64": output_stream.getvalue().hex()  # Alternativa para retornar binário em V0
+        }
+    except Exception as e:
+        return {"erro": str(e)}
+
+@app.post("/conversar")
+async def conversar(p: Pergunta):
+    try:
+        contexto = f"""
+Usuário está prestes a enviar um documento para ser melhorado. 
+Explique como o sistema funciona e peça para ele confirmar o envio.
+
+Pergunta: {p.pergunta}
+        """
+        resposta = ChatOpenAI(model="gpt-4", temperature=0).invoke(contexto)
+        return {"resposta": resposta.content}
+    except Exception as e:
+        return {"erro": str(e)}
