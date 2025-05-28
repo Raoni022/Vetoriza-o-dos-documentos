@@ -1,4 +1,6 @@
 fastapi
 uvicorn
-python-docx
+langchain
 openai
+supabase
+psycopg2-binary
