@@ -40,11 +40,17 @@ class Pergunta(BaseModel):
 
 @app.post("/responder")
 async def responder(p: Pergunta):
-    resultado = qa_chain.invoke({"query": p.pergunta})
-    return {
-        "resposta": resultado["result"],
-        "fontes": [doc.metadata for doc in resultado["source_documents"]]
-    }
+    try:
+        resultado = qa_chain.invoke({"query": p.pergunta})
+        return {
+            "resposta": resultado["result"],
+            "fontes": [doc.metadata for doc in resultado["source_documents"]]
+        }
+    except Exception as e:
+        return {
+            "erro": str(e),
+            "mensagem": "Verifique se a função match_documents_embeddings existe e se os embeddings estão corretamente inseridos."
+        }
 
 @app.post("/melhorar_documento")
 async def melhorar_documento(file: UploadFile = File(...)):
