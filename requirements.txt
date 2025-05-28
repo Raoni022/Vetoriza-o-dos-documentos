@@ -4,3 +4,5 @@ langchain
 openai
 supabase
 psycopg2-binary
+langchain-community
+langchain-openai
