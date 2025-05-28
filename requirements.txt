@@ -1,6 +1,8 @@
 fastapi
 uvicorn
-langchain
 openai
 supabase
-psycopg2-binary
+langchain
+langchain-community
+langchain-openai
+python-dotenv
