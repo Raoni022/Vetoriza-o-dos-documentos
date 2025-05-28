@@ -1,9 +1,15 @@
 {
-  "version": 2,
-  "builds": [
-    { "src": "api/melhorar.py", "use": "@vercel/python" }
-  ],
+  "functions": {
+    "api.py": {
+      "runtime": "vercel-python@3.9"
+    }
+  },
   "routes": [
-    { "src": "/melhorar-documento", "methods": ["POST"], "dest": "api/melhorar.py" }
+    {
+      "src": "/responder",
+      "dest": "/api.py"
+    }
   ]
 }
+
+
