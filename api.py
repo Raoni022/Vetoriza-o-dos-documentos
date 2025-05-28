@@ -12,7 +12,6 @@ from io import BytesIO
 
 app = FastAPI()
 
-# CORS para funcionar com front-end como V0.dev
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -20,7 +19,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Variáveis de ambiente
 SUPABASE_URL = os.environ.get("SUPABASE_URL")
 SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
 OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
@@ -76,7 +74,7 @@ async def melhorar_documento(file: UploadFile = File(...)):
         output_stream.seek(0)
         return {
             "mensagem": "Documento melhorado com sucesso.",
-            "arquivo_base64": output_stream.getvalue().hex()  # Alternativa para retornar binário em V0
+            "arquivo_base64": output_stream.getvalue().hex()
         }
     except Exception as e:
         return {"erro": str(e)}
