@@ -38,5 +38,5 @@ class Pergunta(BaseModel):
 
 @app.post("/responder")
 async def responder(p: Pergunta):
-    resultado = qa_chain.run(p.pergunta)
+    resultado = qa_chain.invoke({"query": p.pergunta})
     return {"resposta": resultado}
