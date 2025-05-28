@@ -7,3 +7,4 @@ psycopg2-binary
 langchain-community
 langchain-openai
 python-docx
+python-multipart
