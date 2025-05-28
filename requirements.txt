@@ -4,3 +4,5 @@ langchain
 openai
 supabase
 psycopg2-binary
+python-docx 
+transformers
