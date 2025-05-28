@@ -6,8 +6,18 @@ from langchain_community.embeddings import OpenAIEmbeddings
 from langchain_openai import ChatOpenAI
 from supabase import create_client
 import os
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Em produção, troque "*" pelo domínio do seu frontend
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 
 SUPABASE_URL = "https://kjwdegxainpuekfwajre.supabase.co"
 SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtqd2RlZ3hhaW5wdWVrZndhanJlIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc0NjYxOTY0MSwiZXhwIjoyMDYyMTk1NjQxfQ.8tOq83Bp68oSXslYWtrnYrLAJjTZZ0esH2A5uioDqOk"
