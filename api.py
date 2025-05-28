@@ -5,9 +5,20 @@ from langchain_community.vectorstores import SupabaseVectorStore
 from langchain_community.embeddings import OpenAIEmbeddings
 from langchain_openai import ChatOpenAI
 from supabase import create_client
+from fastapi.middleware.cors import CORSMiddleware
 import os
 
 app = FastAPI()
+
+# ✅ Habilita CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # ou especifique: ["https://seusite.v0.dev"]
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 
 # 🔑 Suas credenciais (evite deixar hardcoded em produção)
 SUPABASE_URL = "https://kjwdegxainpuekfwajre.supabase.co"
